@@ -83,6 +83,16 @@ public class GraphsTest {
   }
 
   @Test
+  public void testReachableNodesExcludingSelf() {
+    MutableGraph<Integer> directedGraph = GraphBuilder.directed().allowsSelfLoops(false).build();
+    directedGraph.putEdge(N1, N2);
+    directedGraph.putEdge(N1, N3);
+    directedGraph.putEdge(N2, N3);
+    directedGraph.addNode(N4);
+    assertThat(reachableNodes(directedGraph, N1, false)).isEqualTo(ImmutableSet.of(N2, N3));
+  }
+
+  @Test
   public void transitiveClosure_undirectedGraph() {
     MutableGraph<Integer> undirectedGraph =
         GraphBuilder.undirected().allowsSelfLoops(false).build();

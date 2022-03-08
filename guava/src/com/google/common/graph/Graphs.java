@@ -186,7 +186,8 @@ public final class Graphs {
   /**
    * Returns the set of nodes that are reachable from {@code node}. Node B is defined as reachable
    * from node A if there exists a path (a sequence of adjacent outgoing edges) starting at node A
-   * and ending at node B. Note that a node is always reachable from itself via a zero-length path.
+   * and ending at node B. Note that a node is always reachable from itself via a zero-length path,
+   * but if you want to exclude it, you can specify {@code false} to the {@code includeSelf} param.
    *
    * <p>This is a "snapshot" based on the current topology of {@code graph}, rather than a live view
    * of the set of nodes reachable from {@code node}. In other words, the returned {@link Set} will
@@ -194,9 +195,22 @@ public final class Graphs {
    *
    * @throws IllegalArgumentException if {@code node} is not present in {@code graph}
    */
-  public static <N> Set<N> reachableNodes(Graph<N> graph, N node) {
+  public static <N> Set<N> reachableNodes(Graph<N> graph, N node, boolean includeSelf) {
     checkArgument(graph.nodes().contains(node), NODE_NOT_IN_GRAPH, node);
-    return ImmutableSet.copyOf(Traverser.forGraph(graph).breadthFirst(node));
+    Iterable<N> allReachableNodesIncludingSelf = Traverser.forGraph(graph).breadthFirst(node);
+    Iterable<N> result =
+        includeSelf
+            ? allReachableNodesIncludingSelf
+            : Iterables.filter(allReachableNodesIncludingSelf, input -> input != node);
+    return ImmutableSet.copyOf(result);
+  }
+
+  /**
+   * Calls {@link #reachableNodes(Graph, Object, boolean)} passing {@code true} to {@code
+   * includeSelf}.
+   */
+  public static <N> Set<N> reachableNodes(Graph<N> graph, N node) {
+    return reachableNodes(graph, node, true);
   }
 
   // Graph mutation methods
